@@ -13,7 +13,16 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(pinoHttp());
+app.use(
+  pinoHttp({
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        colorize: true,
+      },
+    },
+  }),
+);
 
 // GET /notes
 app.get('/notes', (req, res) => {
