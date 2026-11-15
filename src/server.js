@@ -7,8 +7,9 @@ import pinoHttp from 'pino-http';
 import { connectMongoDB } from './db/connectMongoDB.js';
 import notesRoutes from './routes/notesRoutes.js';
 
-import errorHandler from './middlewares/errorHandler.js';
-import notFoundHandler from './middlewares/notFoundHandler.js';
+import logger from './middleware/logger.js';
+import errorHandler from './middleware/errorHandler.js';
+import notFoundHandler from './middleware/notFoundHandler.js';
 
 dns.setServers(['192.168.0.1']);
 dotenv.config();
@@ -18,7 +19,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(pinoHttp());
+app.use(logger);
 app.use(express.json());
 app.use(cors());
 
