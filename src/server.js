@@ -1,38 +1,29 @@
-import dns from 'node:dns';
+
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
-import pinoHttp from 'pino-http';
 
 import { connectMongoDB } from './db/connectMongoDB.js';
 import notesRoutes from './routes/notesRoutes.js';
 
-import logger from './middleware/logger.js';
-import errorHandler from './middleware/errorHandler.js';
-import notFoundHandler from './middleware/notFoundHandler.js';
+import { logger } from './middleware/logger.js';
+import { notFoundHandler } from './middleware/notFoundHandler.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
-dns.setServers(['192.168.0.1']);
 dotenv.config();
 
 const app = express();
-
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(logger);
 app.use(express.json());
 app.use(cors());
 
-// Routes
-app.use('/notes', notesRoutes);
+app.use(notesRoutes);
 
-// Middleware for handling unknown routes
 app.use(notFoundHandler);
-
-// Error handling middleware
 app.use(errorHandler);
 
-// Start server
 const startServer = async () => {
   await connectMongoDB();
 
