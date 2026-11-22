@@ -2,14 +2,14 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
-import pinoHttp from 'pino-http';
 import { errors } from 'celebrate';
 
 import { connectMongoDB } from './db/connectMongoDB.js';
 import notesRoutes from './routes/notesRoutes.js';
 
-import notFoundHandler from './middlewares/notFoundHandler.js';
-import errorHandler from './middlewares/errorHandler.js';
+import logger from './middleware/logger.js';
+import errorHandler from './middleware/errorHandler.js';
+import notFoundHandler from './middleware/notFoundHandler.js';
 
 dotenv.config();
 
@@ -17,7 +17,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(pinoHttp());
+app.use(logger);
 
 // Routes
 app.use(notesRoutes);
