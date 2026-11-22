@@ -1,6 +1,5 @@
 
 import { Schema, model } from 'mongoose';
-
 import { TAGS } from '../constants/tags.js';
 
 const noteSchema = new Schema(
@@ -19,7 +18,6 @@ const noteSchema = new Schema(
       type: String,
       enum: TAGS,
       default: 'Todo',
-      index: true,
     },
   },
   {
@@ -28,6 +26,7 @@ const noteSchema = new Schema(
   },
 );
 
-const Note = model('Note', noteSchema);
+// Створюємо звичайний індекс для поля tag
+noteSchema.index({ tag: 1 });
 
-export default Note;
+export const Note = model('Note', noteSchema);

@@ -1,43 +1,37 @@
+import { createHttpError } from 'http-errors';
 
-import createHttpError from 'http-errors';
-
-import Note from '../models/note.js';
+import { Note } from '../models/note.js';
 
 // GET /notes
+
 export const getAllNotes = async (req, res, next) => {
   try {
-    const {
-      page = 1,
-      perPage = 10,
-      tag,
-      search = '',
-    } = req.query;
+    const { page = 1, perPage = 10, tag, search = '' } = req.query;
 
-    const filter = {};
+    const notesQuery = Note.find();
 
-    // Фільтрація за тегом
+    // Фільтрація за тегом через ланцюжкові методи Mongoose
     if (tag) {
-      filter.tag = tag;
+      notesQuery.where('tag').equals(tag);
     }
 
-    // Текстовий пошук
+    // Пошук за назвою та вмістом нотатки
     if (search) {
-      filter.$or = [
+      notesQuery.or([
         { title: { $regex: search, $options: 'i' } },
         { content: { $regex: search, $options: 'i' } },
-      ];
+      ]);
     }
 
-    // Загальна кількість нотаток після фільтрації
-    const totalNotes = await Note.countDocuments(filter);
+    const filter = notesQuery.getFilter();
 
-    // Загальна кількість сторінок
+    // Отримуємо нотатки та їх загальну кількість одночасно
+    const [notes, totalNotes] = await Promise.all([
+      notesQuery.skip((page - 1) * perPage).limit(perPage),
+      Note.countDocuments(filter),
+    ]);
+
     const totalPages = Math.ceil(totalNotes / perPage);
-
-    // Отримання нотаток із пагінацією
-    const notes = await Note.find(filter)
-      .skip((page - 1) * perPage)
-      .limit(perPage);
 
     res.status(200).json({
       page,
@@ -84,14 +78,10 @@ export const updateNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
 
-    const note = await Note.findByIdAndUpdate(
-      noteId,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      },
-    );
+    const note = await Note.findByIdAndUpdate(noteId, req.body, {
+      returnDocument: 'after',
+      runValidators: true,
+    });
 
     if (!note) {
       throw createHttpError(404, 'Note not found');
